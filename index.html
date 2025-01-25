@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Completer</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 400px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .task {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 16px;
+      padding: 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+
+    .task h3 {
+      margin: 0;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .task-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .status span {
+      font-size: 14px;
+    }
+
+    .status .completed {
+      color: #10b981;
+    }
+
+    .status .failed {
+      color: #ef4444;
+    }
+
+    .status .pending {
+      color: #6b7280;
+    }
+
+    .progress {
+      margin-top: 20px;
+      background-color: #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 12px;
+      background-color: #3b82f6;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .button {
+      padding: 8px 12px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .button:disabled {
+      background-color: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .link {
+      text-decoration: none;
+      color: #3b82f6;
+      font-size: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+
+      .button {
+        padding: 6px 10px;
+      }
+
+      .task h3 {
+        font-size: 14px;
+      }
+
+      .link {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Task</h1>
+    <p>Earn points by completing tasks!</p>
+
+    <div id="tasks"></div>
+
+    <div class="progress">
+      <div id="progress-bar" class="progress-bar"></div>
+    </div>
+    <p id="points">Your Points: 0 / 12000 SHP</p>
+  </div>
+
+  <script>
+    let tasks = [
+      { id: 1, name: "Complete Human verification", points: 5000, link: "https://t.me/tapcoinsbot/app?startapp=ref_n2kxMG-page_bioMatrixScan", status: "pending", linkClicked: false, attempts: 0, timer: null },
+      { id: 2, name: "Join Channel and Spin", points: 4000, link: "https://t.me/LuckyDrawMasterBot/app?startapp=Y2g9a1FqOXh2SFI3RyZnPXNwJmw9a1FqOXh2SFI3RyZzbz1TaGFyZSZ1PTc0NzYyMjYyMzg=", status: "pending", linkClicked: false, attempts: 0, timer: null },
+      { id: 3, name: "Play for 2 Minutes", points: 3000, link: "https://t.me/kittyverse_ai_bot/play?startapp=u7302461980", status: "pending", linkClicked: false, attempts: 0, timer: null },
+    ];
+
+    function saveTasks() {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function loadTasks() {
+      const savedTasks = localStorage.getItem("tasks");
+      if (savedTasks) {
+        tasks = JSON.parse(savedTasks);
+      }
+    }
+
+    function renderTasks() {
+      const tasksContainer = document.getElementById("tasks");
+      tasksContainer.innerHTML = "";
+
+      tasks.forEach((task) => {
+        const taskElement = document.createElement("div");
+        taskElement.className = "task";
+
+        const taskName = document.createElement("h3");
+        taskName.textContent = task.name;
+
+        const statusSpan = document.createElement("span");
+        statusSpan.className = `status ${task.status}`;
+        statusSpan.innerHTML =
+          task.status === "completed"
+            ? '<span class="completed">✔ Completed</span>'
+            : task.status === "failed"
+            ? '<span class="failed">✖ Verification Failed</span>'
+            : '<span class="pending">⏳ Pending</span>';
+
+        const taskActions = document.createElement("div");
+        taskActions.className = "task-actions";
+
+        const link = document.createElement("a");
+        link.className = "link";
+        link.href = task.link;
+        link.target = "_blank";
+        link.textContent = "Go to Task";
+
+        link.onclick = () => {
+          task.linkClicked = true;
+          saveTasks();
+          renderTasks(); // Re-render to enable the button
+        };
+
+        const button = document.createElement("button");
+        button.className = "button";
+        button.textContent = task.status === "completed" ? "Done" : "Verify";
+        button.disabled = !task.linkClicked || task.status === "completed";
+
+        button.onclick = () => handleTaskClick(task.id, button, statusSpan);
+
+        taskActions.appendChild(link);
+        taskActions.appendChild(button);
+
+        taskElement.appendChild(taskName);
+        taskElement.appendChild(statusSpan);
+        taskElement.appendChild(taskActions);
+
+        tasksContainer.appendChild(taskElement);
+      });
+    }
+
+    function handleTaskClick(taskId, button, statusSpan) {
+      const task = tasks.find((t) => t.id === taskId);
+      button.textContent = "Verifying...";
+      button.disabled = true;
+
+      if (task.attempts === 0) {
+        // First verification (2 minutes)
+        task.timer = setTimeout(() => {
+          task.status = "failed";
+          task.linkClicked = false;
+          task.attempts += 1;
+          saveTasks();
+          renderTasks();
+        }, 120000); // 2 minutes
+      } else if (task.attempts === 1) {
+        // Second verification (20 minutes)
+        task.timer = setTimeout(() => {
+          task.status = "completed";
+          task.timer = null;
+          updateProgress();
+          saveTasks();
+          renderTasks();
+        }, 1200000); // 20 minutes
+      }
+
+      saveTasks();
+    }
+
+    function updateProgress() {
+      const totalPoints = tasks.reduce(
+        (sum, task) => sum + (task.status === "completed" ? task.points : 0),
+        0
+      );
+
+      const progressBar = document.getElementById("progress-bar");
+      progressBar.style.width = `${(totalPoints / 12000) * 80}%`;
+
+      const pointsElement = document.getElementById("points");
+      pointsElement.textContent = `Your Points: ${totalPoints} / 12000 SHP`;
+    }
+
+    window.addEventListener("load", () => {
+      loadTasks();
+      renderTasks();
+      updateProgress();
+    });
+  </script>
+</body>
+</html>
