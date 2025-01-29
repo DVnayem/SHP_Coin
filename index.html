@@ -3,136 +3,222 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Task Completer</title>
+  <title>Task Manager Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body {
+    :root {
+      --primary: #4f46e5;
+      --success: #10b981;
+      --error: #ef4444;
+      --surface: #ffffff;
+      --background: #f8fafc;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+    }
+
+    * {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f3f4f6;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--background);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem 1rem;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
+      justify-content: center;
     }
 
     .container {
-      max-width: 400px;
+      background: var(--surface);
+      max-width: 520px;
       width: 100%;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+      padding: 2rem;
     }
 
-    .task {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 16px;
-      padding: 10px;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
     }
 
-    .task h3 {
-      margin: 0;
-      font-size: 16px;
-      margin-bottom: 8px;
+    .title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
     }
 
-    .task-actions {
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .task-list {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .task-card {
+      padding: 1.5rem;
+      border-radius: 1rem;
+      background: var(--surface);
+      border: 1px solid #e2e8f0;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .task-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 10px;
+      margin-bottom: 1rem;
     }
 
-    .status span {
-      font-size: 14px;
+    .task-title {
+      font-size: 1rem;
+      font-weight: 600;
     }
 
-    .status .completed {
-      color: #10b981;
+    .task-points {
+      font-size: 0.875rem;
+      color: var(--primary);
+      font-weight: 600;
     }
 
-    .status .failed {
-      color: #ef4444;
+    .task-status {
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
     }
 
-    .status .pending {
-      color: #6b7280;
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
     }
 
-    .progress {
-      margin-top: 20px;
-      background-color: #e5e7eb;
-      border-radius: 12px;
-      overflow: hidden;
-    }
+    .status-pending { color: var(--text-secondary); background: var(--text-secondary); }
+    .status-verifying { color: #eab308; background: #eab308; }
+    .status-completed { color: var(--success); background: var(--success); }
+    .status-failed { color: var(--error); background: var(--error); }
 
-    .progress-bar {
-      height: 12px;
-      background-color: #3b82f6;
-      width: 0%;
-      transition: width 0.3s;
-    }
-
-    .button {
-      padding: 8px 12px;
-      background-color: #3b82f6;
-      color: white;
+    .action-button {
+      width: 100%;
+      padding: 0.75rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 0.75rem;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
 
-    .button:disabled {
-      background-color: #d1d5db;
+    .action-button:not(:disabled) {
+      background: var(--primary);
+      color: white;
+    }
+
+    .action-button:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
       cursor: not-allowed;
     }
 
-    .link {
-      text-decoration: none;
-      color: #3b82f6;
-      font-size: 14px;
+    .progress-container {
+      background: #f1f5f9;
+      border-radius: 100px;
+      height: 10px;
+      margin: 2rem 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, #6366f1 100%);
+      border-radius: 100px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .points-display {
+      text-align: center;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .points-display span {
+      color: var(--primary);
     }
 
     @media (max-width: 480px) {
       .container {
-        padding: 15px;
+        padding: 1.5rem;
+        border-radius: 1rem;
       }
 
-      .button {
-        padding: 6px 10px;
-      }
-
-      .task h3 {
-        font-size: 14px;
-      }
-
-      .link {
-        font-size: 12px;
+      .task-card {
+        padding: 1rem;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Daily Task</h1>
-    <p>Earn points by completing tasks!</p>
+    <div class="header">
+      <h1 class="title">Task Manager</h1>
+      <p class="subtitle">Complete tasks to earn rewards</p>
+    </div>
 
-    <div id="tasks"></div>
+    <div id="tasks" class="task-list"></div>
 
-    <div class="progress">
+    <div class="progress-container">
       <div id="progress-bar" class="progress-bar"></div>
     </div>
-    <p id="points">Your Points: 0 / 12000 SHP</p>
+    <p class="points-display" id="points"><span>0</span> / 12000 SHP</p>
   </div>
 
   <script>
     let tasks = [
-      { id: 1, name: "Complete Human verification", points: 5000, link: "https://t.me/tapcoinsbot/app?startapp=ref_n2kxMG-page_bioMatrixScan", status: "pending", linkClicked: false, attempts: 0, timer: null },
-      { id: 2, name: "Join Channel and Spin", points: 4000, link: "https://t.me/LuckyDrawMasterBot/app?startapp=Y2g9a1FqOXh2SFI3RyZnPXNwJmw9a1FqOXh2SFI3RyZzbz1TaGFyZSZ1PTc0NzYyMjYyMzg=", status: "pending", linkClicked: false, attempts: 0, timer: null },
-      { id: 3, name: "Play for 2 Minutes", points: 3000, link: "https://t.me/kittyverse_ai_bot/play?startapp=u7302461980", status: "pending", linkClicked: false, attempts: 0, timer: null },
+      { 
+        id: 1, 
+        name: "Complete Human Verification", 
+        points: 5000, 
+        link: "https://t.me/tapcoinsbot/app?startapp=ref_n2kxMG-page_bioMatrixScan", 
+        status: "pending", 
+        attempts: 0, 
+        timer: null 
+      },
+      { 
+        id: 2, 
+        name: "Join Channel & Spin", 
+        points: 4000, 
+        link: "https://t.me/LuckyDrawMasterBot/app?startapp=Y2g9a1FqOXh2SFI3RyZnPXNwJmw9a1FqOXh2SFI3RyZzbz1TaGFyZSZ1PTc0NzYyMjYyMzg=", 
+        status: "pending", 
+        attempts: 0, 
+        timer: null 
+      },
+      { 
+        id: 3, 
+        name: "Play for 2 Minutes", 
+        points: 3000, 
+        link: "https://t.me/kittyverse_ai_bot/play?startapp=u7302461980", 
+        status: "pending", 
+        attempts: 0, 
+        timer: null 
+      }
     ];
 
     function saveTasks() {
@@ -141,103 +227,97 @@
 
     function loadTasks() {
       const savedTasks = localStorage.getItem("tasks");
-      if (savedTasks) {
-        tasks = JSON.parse(savedTasks);
-      }
+      if (savedTasks) tasks = JSON.parse(savedTasks);
     }
 
     function renderTasks() {
-      const tasksContainer = document.getElementById("tasks");
-      tasksContainer.innerHTML = "";
+      const container = document.getElementById("tasks");
+      container.innerHTML = "";
 
-      tasks.forEach((task) => {
-        const taskElement = document.createElement("div");
-        taskElement.className = "task";
+      tasks.forEach(task => {
+        const card = document.createElement("div");
+        card.className = "task-card";
 
-        const taskName = document.createElement("h3");
-        taskName.textContent = task.name;
+        const statusText = {
+          pending: "Pending Verification",
+          verifying: "Verification in Progress",
+          completed: "Task Completed",
+          failed: "Verification Failed"
+        }[task.status];
 
-        const statusSpan = document.createElement("span");
-        statusSpan.className = `status ${task.status}`;
-        statusSpan.innerHTML =
-          task.status === "completed"
-            ? '<span class="completed">✔ Completed</span>'
-            : task.status === "failed"
-            ? '<span class="failed">✖ Verification Failed</span>'
-            : '<span class="pending">⏳ Pending</span>';
+        card.innerHTML = `
+          <div class="task-header">
+            <div class="task-title">${task.name}</div>
+            <div class="task-points">+${task.points} SHP</div>
+          </div>
+          <div class="task-status">
+            <div class="status-dot status-${task.status}"></div>
+            ${statusText}
+          </div>
+          <button class="action-button" ${task.status !== 'pending' ? 'disabled' : ''}>
+            ${getButtonText(task)}
+          </button>
+        `;
 
-        const taskActions = document.createElement("div");
-        taskActions.className = "task-actions";
+        const button = card.querySelector("button");
+        if (task.status === 'pending') {
+          button.onclick = () => handleTaskAction(task.id, button);
+        }
 
-        const link = document.createElement("a");
-        link.className = "link";
-        link.href = task.link;
-        link.target = "_blank";
-        link.textContent = "Go to Task";
-
-        link.onclick = () => {
-          task.linkClicked = true;
-          saveTasks();
-          renderTasks(); // Re-render to enable the button
-        };
-
-        const button = document.createElement("button");
-        button.className = "button";
-        button.textContent = task.status === "completed" ? "Done" : "Verify";
-        button.disabled = !task.linkClicked || task.status === "completed";
-
-        button.onclick = () => handleTaskClick(task.id, button, statusSpan);
-
-        taskActions.appendChild(link);
-        taskActions.appendChild(button);
-
-        taskElement.appendChild(taskName);
-        taskElement.appendChild(statusSpan);
-        taskElement.appendChild(taskActions);
-
-        tasksContainer.appendChild(taskElement);
+        container.appendChild(card);
       });
     }
 
-    function handleTaskClick(taskId, button, statusSpan) {
-      const task = tasks.find((t) => t.id === taskId);
-      button.textContent = "Verifying...";
-      button.disabled = true;
+    function getButtonText(task) {
+      if (task.status === 'completed') return '✓ Task Completed';
+      if (task.status === 'failed') return '✗ Try Again';
+      if (task.attempts > 0) return '⏳ Verifying...';
+      return '▶ Start Task';
+    }
 
+    function handleTaskAction(taskId, button) {
+      const task = tasks.find(t => t.id === taskId);
+      const newWindow = window.open(task.link, '_blank');
+      
+      if (!newWindow) {
+        alert('Please allow pop-ups to start this task.');
+        return;
+      }
+
+      button.disabled = true;
+      task.status = 'verifying';
+      saveTasks();
+      renderTasks();
+
+      // First verification attempt (2 minutes)
       if (task.attempts === 0) {
-        // First verification (2 minutes)
         task.timer = setTimeout(() => {
-          task.status = "failed";
-          task.linkClicked = false;
-          task.attempts += 1;
+          task.status = 'failed';
+          task.attempts++;
           saveTasks();
           renderTasks();
-        }, 120000); // 2 minutes
-      } else if (task.attempts === 1) {
-        // Second verification (20 minutes)
+        }, 120000);
+      }
+      // Second attempt (20 minutes)
+      else if (task.attempts === 1) {
         task.timer = setTimeout(() => {
-          task.status = "completed";
-          task.timer = null;
+          task.status = 'completed';
           updateProgress();
           saveTasks();
           renderTasks();
-        }, 1200000); // 20 minutes
+        }, 1200000);
       }
-
-      saveTasks();
     }
 
     function updateProgress() {
-      const totalPoints = tasks.reduce(
-        (sum, task) => sum + (task.status === "completed" ? task.points : 0),
-        0
-      );
-
-      const progressBar = document.getElementById("progress-bar");
-      progressBar.style.width = `${(totalPoints / 12000) * 80}%`;
-
-      const pointsElement = document.getElementById("points");
-      pointsElement.textContent = `Your Points: ${totalPoints} / 12000 SHP`;
+      const totalPoints = tasks.reduce((sum, task) => 
+        task.status === 'completed' ? sum + task.points : sum, 0);
+      
+      document.getElementById("progress-bar").style.width = 
+        `${(totalPoints / 12000) * 100}%`;
+      
+      document.getElementById("points").innerHTML = 
+        `<span>${totalPoints}</span> / 12000 SHP`;
     }
 
     window.addEventListener("load", () => {
